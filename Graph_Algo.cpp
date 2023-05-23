@@ -9,13 +9,13 @@ class Graph{
 
     private:
     int v;
-    vector<vector<pair<int, int> > > adjMatrix;
+    vector<vector<int> >  adjMatrix;
 
     public:
 
     Graph(int v){
         this->v=v;
-        adjMatrix.resize(v);
+        adjMatrix.resize(v, vector<int>(v, INT_MAX));
     }
 
     int findMinDistance(vector<int>& dist, vector<bool>& visited) {
@@ -32,9 +32,11 @@ class Graph{
         return minIndex;
     }
 
-    void addEdge(int u, int v, int w){
-        adjMatrix[u].push_back(make_pair(v, w));
-        adjMatrix[v].push_back(make_pair(u, w));
+    void addEdge(int u, int v, int weight, bool dir=0){
+        adjMatrix[u][v]=weight;
+        if(!dir){
+            adjMatrix[v][u]=weight;
+        }
     }
 
     void BFS(int start){
@@ -47,12 +49,10 @@ class Graph{
             int u=q.front();
             q.pop();
             cout<<u<<" ";
-            int n=adjMatrix[u].size();
-            for(int i=0; i<n; i++){
-                v=adjMatrix[u][i].first;
-                if(!visited[v]){
-                    visited[v]=true;
-                    q.push(v);
+            for(int i=0; i<v; i++){
+                if(!visited[i] && adjMatrix[u][i]!=INT_MAX){
+                    visited[i]=true;
+                    q.push(i);
                 }
             }
         }
@@ -70,15 +70,27 @@ class Graph{
             if(!visited[u]){
                 visited[u]=true;
                 cout<<u<<" ";
-                int n=adjMatrix[u].size();
 
-                for(int i=0; i<n; i++){
-                    int v=adjMatrix[u][i].first;
-                    if(!visited[v]){
-                        s.push(v);
+                for(int i=0; i<v; i++){
+                    if(!visited[i] && adjMatrix[u][i]!=INT_MAX){
+                        s.push(i);
                     }
                 }
             }
+        }
+    }
+
+    void printAdjMatrix(){
+        for(int i=0; i<v; i++){
+            for(int j=0; j<v; j++){
+                if(adjMatrix[i][j]==INT_MAX){
+                    cout<<"n"<<"\t";
+                }
+                else{
+                    cout<<adjMatrix[i][j]<<"\t";
+                }
+            }
+            cout<<endl;
         }
     }
 
@@ -89,16 +101,16 @@ class Graph{
 
         for (int i = 0; i < v - 1; i++) {
             int u = findMinDistance(dist, visited);
+            cout<<u<<endl;
             if(u==-1){
                 break;
             }
             visited[u] = true;
 
-            for (int i=0; i<adjMatrix[u].size(); i++) {
-                int v=adjMatrix[u][i].first;
-                int weight = adjMatrix[u][i].second;
-                if (!visited[v] && dist[u] + weight < dist[v]) {
-                    dist[v] = dist[u] + weight;
+            for (int i=0; i<v; i++) {
+                int weight = adjMatrix[u][i];
+                if (!visited[i] && (dist[u] + weight) < dist[i] && weight!=INT_MAX) {
+                    dist[i] = dist[u] + weight;
                 }
             }
         }
@@ -132,7 +144,7 @@ int main(){
     g.addEdge(6,8,6);
     g.addEdge(6,7,1);
     g.addEdge(7,8,7);
-    
+
     cout<<"BFS Traversal: ";
     g.BFS(0);
     cout<<endl;
@@ -141,7 +153,7 @@ int main(){
     g.DFS(0);
     cout<<endl;
 
-    g.Dijkstra(7);
+    g.Dijkstra(0);
     cout<<endl;
 
     return 0;
