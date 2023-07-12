@@ -78,13 +78,14 @@ class Graph{
                 }
             }
         }
+        cout<<endl;
     }
 
     void printAdjMatrix(){
         for(int i=0; i<v; i++){
             for(int j=0; j<v; j++){
                 if(adjMatrix[i][j]==INT_MAX){
-                    cout<<"n"<<"\t";
+                    cout<<"∞"<<"\t";
                 }
                 else{
                     cout<<adjMatrix[i][j]<<"\t";
@@ -101,7 +102,6 @@ class Graph{
 
         for (int i = 0; i < v - 1; i++) {
             int u = findMinDistance(dist, visited);
-            cout<<u<<endl;
             if(u==-1){
                 break;
             }
@@ -126,6 +126,31 @@ class Graph{
             
         }
     }
+
+    void Prim(){
+        vector<int> parent(v, -1);
+        vector<int> dist(v, INT_MAX);
+        vector<bool> visited(v, false);
+
+        dist[0]=0;
+
+        for(int count = 0; count < v - 1; count++){
+            int u = findMinDistance(dist, visited);
+            visited[u] = true;
+
+            for(int i = 0; i < v; i++){
+                if(adjMatrix[u][i] && !visited[i] && adjMatrix[u][i] < dist[i]){
+                    parent[i] = u;
+                    dist[i] = adjMatrix[u][i];
+                }
+            }
+        }
+
+        cout << "Minimum Spanning Tree (MST):" << endl;
+        for(int i = 1; i < v; i++){
+            cout << "Edge: " << parent[i] << " - " << i << " Weight: " << adjMatrix[i][parent[i]] << endl;
+        }
+    }
 };
 
 int main(){
@@ -145,6 +170,10 @@ int main(){
     g.addEdge(6,7,1);
     g.addEdge(7,8,7);
 
+    cout<<endl;
+    g.printAdjMatrix();
+    cout<<endl;
+
     cout<<"BFS Traversal: ";
     g.BFS(0);
     cout<<endl;
@@ -154,6 +183,9 @@ int main(){
     cout<<endl;
 
     g.Dijkstra(0);
+    cout<<endl;
+
+    g.Prim();
     cout<<endl;
 
     return 0;
