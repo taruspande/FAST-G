@@ -291,7 +291,7 @@ class Graph{
 int main(){
     Graph g1(9);                        //Normal Weighted Graph
     Graph g2(11, 0, 10, true);          //Flow Graph
-    Graph g3(8, -1, -1, false, true);   //Bipartite Graph
+    Graph g3(10, -1, -1, false, true);   //Bipartite Graph
              
     g1.addEdge(0,1,4);
     g1.addEdge(0,7,8);
@@ -364,7 +364,7 @@ int main(){
 
     cout<<endl<<"Flow Graph"<<endl;
     g2.printAdjMatrix();
-    cout<<"Max Flow: "<<g2.FordFulkerson(0, 10)<<endl;
+    cout<<endl<<"Max Flow: "<<g2.FordFulkerson(0, 10)<<endl;
 
     cout<<endl<<"Bipartite Graph"<<endl;
     g3.printAdjMatrix();
