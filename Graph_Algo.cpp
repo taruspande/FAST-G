@@ -2,6 +2,7 @@
 #include<vector>
 #include<stack>
 #include<queue>
+#include<utility>
 
 using namespace std;
 
@@ -15,8 +16,13 @@ class Graph{
 
     public:
 
-    Graph(int v, int source=-1, int sink=-1, bool flowGraph=false){
-        this->v=v;
+    Graph(int v, int source=-1, int sink=-1, bool flowGraph=false, bool bipartite=false){
+        if(bipartite){
+            this->v=v/2;
+        }
+        else{
+            this->v=v;
+        }
         this->source=source;
         this->sink=sink;
         if(!flowGraph){
@@ -42,7 +48,7 @@ class Graph{
         return minIndex;
     }
 
-    void addEdge(int u, int v, int weight, bool dir=0){
+    void addEdge(int u, int v, int weight, bool dir=false){
         adjMatrix[u][v]=weight;
         if(!dir){
             adjMatrix[v][u]=weight;
@@ -213,11 +219,80 @@ class Graph{
 
         return maxFlow;
     }
+
+    vector<int> perfectMatchingMinWeights(){
+        for(int i=0; i<v; i++){
+            int minVal=INT_MAX;
+            for(int j=0; j<v; j++){
+                if(adjMatrix[i][j]<minVal){
+                    minVal=adjMatrix[i][j];
+                }
+            }
+            for(int j=0; j<v; j++){
+                if(adjMatrix[i][j]!=INT_MAX){
+                    adjMatrix[i][j]-=minVal;
+                }
+            }
+        }
+
+        for(int j=0; j<v; j++){
+            int minVal=INT_MAX;
+            for(int i=0; i<v; i++) {
+                if(adjMatrix[i][j]<minVal){
+                    minVal=adjMatrix[i][j];
+                }
+            }
+            for(int i=0; i<v; i++){
+                if(adjMatrix[i][j]!=INT_MAX){
+                    adjMatrix[i][j]-=minVal;
+                }
+            }
+        }
+
+        vector<int> match(v, -1);
+
+        for(int i=0; i<v; i++){
+            vector<bool> visited(v, false);
+            if(findMatch(i, match, visited)){
+                for(int j=0; j<v; j++){
+                    if(match[j]==-1){
+                        for(int k=0; k<v; k++){
+                            if(!visited[k]){
+                                if(adjMatrix[j][k]!=INT_MAX){
+                                    adjMatrix[j][k]-=adjMatrix[i][k];
+                                }
+                                if(adjMatrix[k][j]!=INT_MAX){
+                                    adjMatrix[k][j]+=adjMatrix[i][j];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return match;
+    }
+
+    bool findMatch(int u, vector<int>& match, vector<bool>& visited){
+        for(int i=0; i<v; i++) {
+            if(adjMatrix[u][i]!=INT_MAX && !visited[i]){
+                visited[i]=true;
+                if(match[i]==-1 || findMatch(match[i], match, visited)){
+                    match[i]=u;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 };
 
 int main(){
-    Graph g1(9);
-    Graph g2(11, 0, 10, true);
+    Graph g1(9);                        //Normal Weighted Graph
+    Graph g2(11, 0, 10, true);          //Flow Graph
+    Graph g3(8, -1, -1, false, true);   //Bipartite Graph
+             
     g1.addEdge(0,1,4);
     g1.addEdge(0,7,8);
     g1.addEdge(1,2,8);
@@ -252,8 +327,24 @@ int main(){
     g2.addFlowEdge(8, 10, 3);
     g2.addFlowEdge(9, 10, 4);
 
+    g3.addEdge(0, 0, 5, true);
+    g3.addEdge(0, 1, 2, true);
+    g3.addEdge(0, 4, 1, true);
+    g3.addEdge(1, 0, 3, true);
+    g3.addEdge(1, 2, 7, true);
+    g3.addEdge(1, 3, 4, true);
+    g3.addEdge(1, 4, 9, true);
+    g3.addEdge(2, 1, 4, true);
+    g3.addEdge(2, 3, 6, true);
+    g3.addEdge(3, 0, 8, true);
+    g3.addEdge(3, 2, 8, true);
+    g3.addEdge(3, 3, 3, true);
+    g3.addEdge(3, 4, 3, true);
+    g3.addEdge(4, 0, 2, true);
+    g3.addEdge(4, 2, 7, true);
 
-    cout<<endl<<"Graph 1"<<endl;
+
+    cout<<endl<<"Weighted Graph"<<endl;
     g1.printAdjMatrix();
     cout<<endl;
 
@@ -271,8 +362,17 @@ int main(){
     g1.Prim();
     cout<<endl;
 
-    cout<<endl<<"Graph 2"<<endl;
+    cout<<endl<<"Flow Graph"<<endl;
     g2.printAdjMatrix();
-    cout<<"Max Flow: "<<g2.FordFulkerson(0, 10);
+    cout<<"Max Flow: "<<g2.FordFulkerson(0, 10)<<endl;
+
+    cout<<endl<<"Bipartite Graph"<<endl;
+    g3.printAdjMatrix();
+    vector<int> match=g3.perfectMatchingMinWeights();
+    cout<<endl<<"Minimum Weight Perfect Matching:" << endl;
+    for (int i=0; i<5; i++) {
+        cout<<"Vertex(Red) "<<i<<" -> Vertex(Blue) "<<match[i]<<endl;
+    }
+
     return 0;
 }
